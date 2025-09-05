@@ -1,0 +1,35 @@
+version: '3.8'
+
+
+services:
+  zigbee2mqtt:
+    image: koenkk/zigbee2mqtt
+    container_name: zigbee2mqtt
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+    devices:
+      - /dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_dee9ac45bf49ef11adf3cd8cff00cc63-if00-port0:/dev/ttyUSB0
+    environment:
+      - TZ=Europe/Paris
+    ports:
+      - "8080:8080"
+    depends_on:
+      mqtt:
+        condition: service_healthy
+
+  mqtt:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    restart: unless-stopped
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    ports:
+      - "1883:1883"
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "127.0.0.1", "-p", "1883", "-t", "test", "-m", "test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

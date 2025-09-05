@@ -1,0 +1,35 @@
+digraph ZigbeeTopology {
+    rankdir=LR;
+    node [shape=box, style=rounded, fontsize=11];
+
+    subgraph cluster_devices {
+        label="Zigbee Devices";
+        style=dashed;
+        button [label="Sonoff Zigbee Button"];
+        sensor [label="Zigbee Light Sensor"];
+    }
+
+    coordinator [label="Sonoff Zigbee 3.0 USB Dongle Plus\n(Coordinator)"];
+    z2m [label="Zigbee2MQTT (WSL Ubuntu)\n+ Mosquitto MQTT Broker", shape=box3d];
+    apps [label="MQTT Clients / Applications", shape=ellipse, style=filled, fillcolor=lightgrey];
+
+    sniffer [label="nRF52840 Dongle\n(Zigbee Sniffer)", shape=component];
+    wireshark [label="Wireshark\n(Windows)", shape=note, style=filled, fillcolor=lightblue];
+
+    // Zigbee network
+    button -> coordinator [label="Zigbee"];
+    sensor -> coordinator [label="Zigbee"];
+
+    // Coordinator connection
+    coordinator -> z2m [label="/dev/ttyUSB0\n(USB passthrough)"];
+
+    // MQTT flow
+    z2m -> apps [label="MQTT publish/subscribe"];
+
+    // Sniffer side
+    button -> sniffer [style=dotted, label="Sniffed Zigbee"];
+    sensor -> sniffer [style=dotted];
+    coordinator -> sniffer [style=dotted];
+
+    sniffer -> wireshark [label="802.15.4 frames"];
+}
