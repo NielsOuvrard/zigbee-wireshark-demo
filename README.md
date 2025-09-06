@@ -29,14 +29,25 @@ The goal is to show how Zigbee communication (e.g., button press, sensor update)
 
 Use the **Sonoff Zigbee 3.0 USB Dongle Plus** as your Zigbee coordinator with Zigbee2MQTT.
 
+You maybe need to flash the latest Zigbee2MQTT firmware onto the dongle. I used this link:
+[Sonoff Firmware](https://dongle.sonoff.tech/sonoff-dongle-flasher/)
+
+Then, with the Docker Compose file in `scripts/`, start Zigbee2MQTT and Mosquitto:
+
 ```bash
+# I did this in WSL (Ubuntu) on Windows
 docker compose up -d
 ```
+
+Then, you can access the Zigbee2MQTT frontend at `http://localhost:8080` and pair your devices (Sonoff Button, Light Sensor).
 
 ### 2. Sniffer setup
 
 Flash the Nordic nRF52840 Dongle with Nordic’s nRF Sniffer for 802.15.4.  
 Connect it to Wireshark via extcap.
+
+I used this repo for flashing and setup:
+[nRF Sniffer for 802.15.4](https://github.com/NordicSemiconductor/nRF-Sniffer-for-802.15.4)
 
 ### 3. Wireshark configuration
 
@@ -48,11 +59,13 @@ In **Edit → Preferences → Protocols → IEEE 802.15.4 → Decryption Keys**:
   - Decryption key index: `0`
   - Key hash: `No hash`
 
+> [!NOTE]
+> You'll find the Zigbee Network Key in `coordinator_backup.json` in the `data` folder created by Zigbee2MQTT.
 
 In **Edit → Preferences → Protocols → ZigBee**:
 
 - Add the Network Key:
-    - Key: `00112233445566778899AABBCCDDEEFF` (example, use your own)
+    - Key: `00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF` (example, use your own, colon-separated)
     - Byte Order: `Normal`
     - Label: `Zigbee Network Key` (for reference)
 
@@ -72,14 +85,6 @@ Now Wireshark will show decrypted ZCL frames when you press the button.
 **Wireshark:** shows decrypted ZCL frame with manufacturer-specific payload.
 
 See `images/double_press.png`.
-
----
-
-### 📌 Why this repo?
-
-- Show the link between raw Zigbee packets and MQTT JSON events in Zigbee2MQTT.
-- Learn how Zigbee encryption/decryption works.
-- Provide a reproducible lab setup for debugging Zigbee devices.
 
 ---
 
